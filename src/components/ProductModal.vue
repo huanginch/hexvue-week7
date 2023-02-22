@@ -8,11 +8,13 @@
     aria-hidden="true">
     <div class="modal-dialog modal-xl">
         <div class="modal-content rounded-0">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">{{  }}</h5>
+            <div class="modal-header bg-secondary rounded-0">
+                <h5
+                class="modal-title text-white"
+                id="exampleModalLabel">{{ isNew ? "新增產品" : `產品編號: ${tempProduct.id}` }}</h5>
                 <button
                 type="button"
-                class="btn-close"
+                class="btn-close bg-white rounded-0"
                 data-bs-dismiss="modal"
                 aria-label="Close"></button>
             </div>
@@ -193,7 +195,7 @@
                                 v-model="tempProduct.imageUrl"
                                 class="form-control mb-2"
                                 type="text" id="productMainImg"
-                                placeholder="請輸入圖片連結"
+                                placeholder="請輸入圖片連結或上傳圖片"
                                 rules="required"
                                 :class="{
                                     'is-invalid': errors['productMainImg'],
@@ -201,6 +203,21 @@
                                     && tempProduct.imageUrl,
                                 }"
                                 ></VField>
+                                <div class="d-flex align-items-center custom-file mb-2">
+                                    <div>
+                                      <label
+                                      class="custom-file-label bg-secondary px-3 py-2"
+                                      for="inputGroupFile01">選擇檔案</label>
+                                      <input
+                                      @change="uploadImg"
+                                      ref="file" type="file"
+                                      class="custom-file-input rounded-end"
+                                      accept="image/*"
+                                      id="inputGroupFile01"
+                                      aria-describedby="inputGroupFileAddon01">
+                                    </div>
+                                    <smallLoading :active="loadingImg"></smallLoading>
+                                </div>
                                 <img v-if="tempProduct.imageUrl"
                                 :src="tempProduct.imageUrl" alt="main_image" class="img-fluid">
                                 <ErrorMessage name="productMainImg"></ErrorMessage>
@@ -240,7 +257,7 @@
                 <button
                 type="button"
                 class="btn btn-secondary"
-                @click="updateProduct(tempProduct, isNew);
+                @click="submit();
                 this.hideModal();"
                 >{{ isNew ? "新增" : "修改" }}</button>
             </div>
@@ -250,8 +267,9 @@
 </template>
 
 <script>
-import { mapActions } from 'pinia';
-import productStore from '../stores/productStore';
+import smallLoading from '@/components/SmallLoading.vue';
+
+const { VITE_APP_URL, VITE_APP_PATH } = import.meta.env;
 
 export default {
   name: 'ProductModal',
@@ -261,6 +279,8 @@ export default {
       modal: null,
       tempProduct: {},
       showAddImgBtn: true,
+      loadingImg: false,
+      message: '',
     };
   },
   watch: {
@@ -293,10 +313,53 @@ export default {
     removeOtherImg(index) {
       this.tempProduct.imagesUrl.splice(index, 1);
     },
-    ...mapActions(productStore, ['updateProduct']),
+    submit() {
+      this.$emit('update-product', this.tempProduct);
+    },
+    uploadImg() {
+      this.loadingImg = true;
+      const uploadedImg = document.getElementById('inputGroupFile01').files[0];
+      const formData = new FormData();
+      formData.append('file-to-upload', uploadedImg);
+      const url = `${VITE_APP_URL}/api/${VITE_APP_PATH}/admin/upload`;
+      this.$http.post(url, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }).then((res) => {
+        this.loadingImg = false;
+        if (res.data.success) {
+          this.tempProduct.imageUrl = res.data.imageUrl;
+        }
+      }).catch((err) => {
+        this.loadingImg = false;
+        this.message = err.response.data.message;
+        this.$swal(this.message);
+      });
+    },
   },
   mounted() {
     this.modal = new window.bootstrap.Modal(document.getElementById('productModal'));
   },
+  components: {
+    smallLoading,
+  },
 };
 </script>
+
+<style lang="scss">
+::-webkit-file-upload-button {
+    display: none;
+}
+
+.custom-file-label {
+    cursor: pointer;
+    color: #fff;
+    padding: 5px 10px;
+}
+
+.custom-file-input {
+    padding: 5px 10px;
+    max-width: 150px;
+}
+</style>

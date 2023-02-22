@@ -27,11 +27,6 @@ const routes = [
         component: () => import('../views/admin/CouponsView.vue'),
       },
     ],
-    // async beforeEnter(to) {
-    //   const authStore = await import('../stores/authStore');
-    //   const productStore = await import('../stores/productStore');
-    //   const orderStore = await import('../stores/orderStore');
-    // },
   },
 ];
 

@@ -7,11 +7,13 @@
     aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content rounded-0">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">{{  }}</h5>
+            <div class="modal-header bg-secondary rounded-0">
+                <h5
+                class="modal-title text-white"
+                id="exampleModalLabel">{{ isNew ? "新增優惠券" : `優惠券編號: ${tempCoupon.id}` }}</h5>
                 <button
                 type="button"
-                class="btn-close"
+                class="btn-close bg-white rounded-0"
                 data-bs-dismiss="modal"
                 aria-label="Close"></button>
             </div>
@@ -89,7 +91,7 @@
                             </div>
                             <div>
                                 <input
-                                v-model="tempCoupon.is_enabled"
+                                v-model.number="tempCoupon.is_enabled"
                                 class="form-check-input me-2" type="checkbox"
                                 :value="tempCoupon.is_enabled"
                                 id="orderIsEnabled">
@@ -109,7 +111,8 @@
                     取消
                 </button>
                 <button type="button" class="btn btn-secondary"
-                @click="updateCoupon(tempCoupon)"
+                @click="submit();
+                this.closeModal();"
                 >{{ isNew ? "新增" : "修改" }}</button>
             </div>
             </div>
@@ -118,8 +121,6 @@
 </template>
 
 <script>
-import { mapActions } from 'pinia';
-import couponStore from '../stores/couponStore';
 
 export default {
   name: 'CouponModal',
@@ -133,10 +134,15 @@ export default {
     };
   },
   watch: {
+    tempCoupon: {
+      handler() {
+        this.tempCoupon.is_enabled = this.tempCoupon.is_enabled ? 1 : 0;
+      },
+      deep: true,
+    },
     coupon: {
       handler() {
         this.tempCoupon = JSON.parse(JSON.stringify(this.coupon));
-        this.tempCoupon.is_enabled = this.tempCoupon.is_enabled ? 1 : 0;
         console.log('coupon', this.coupon);
       },
       deep: true,
@@ -149,7 +155,9 @@ export default {
     closeModal() {
       this.modal.hide();
     },
-    ...mapActions(couponStore, ['updateCoupon']),
+    submit() {
+      this.$emit('update-coupon', this.tempCoupon);
+    },
   },
   mounted() {
     this.modal = new window.bootstrap.Modal(document.getElementById('couponModal'));

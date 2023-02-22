@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <h1>訂單管理</h1>
-        <table class="table align-middle">
+        <table class="table text-center align-middle">
             <thead>
                 <tr>
                 <th>訂單編號</th>
@@ -43,35 +43,105 @@
         </table>
         <PaginationComponent :pages="pagination"></PaginationComponent>
     </div>
-    <orderModal ref="orderModal" :order="order"></orderModal>
+    <orderModal ref="orderModal" :order="order" @update-order="updateOrder"></orderModal>
     <DelConfirmModal ref="delModal" :message="message" :delFunc="delFunc"/>
+    <PageLoading :active="loading"/>
+    <AlertModal ref="alertModal" :message="responseMessage"/>
 </template>
 
 <script>
-import { mapState, mapActions } from 'pinia';
-import orderStore from '../../stores/orderStore';
+import { mapActions } from 'pinia';
 import authStore from '../../stores/authStore';
 import orderModal from '../../components/OrderModal.vue';
 import DelConfirmModal from '../../components/DelConfirmModal.vue';
 import PaginationComponent from '../../components/PaginationComponent.vue';
+import PageLoading from '../../components/PageLoading.vue';
+
+const { VITE_APP_URL, VITE_APP_PATH } = import.meta.env;
 
 export default {
   name: 'OrdersView',
   data() {
     return {
+      orders: [],
       order: {},
+      pagination: {},
       message: '',
       delFunc: null,
+      loading: false,
+      responseMessage: '',
     };
   },
-  computed: {
-    ...mapState(orderStore, ['orders', 'pagination']),
-  },
   methods: {
+    getOrders(page = 1) {
+      this.loading = true;
+      this.$http
+        .get(`${VITE_APP_URL}/api/${VITE_APP_PATH}/admin/orders?page=${page}`)
+        .then((res) => {
+          this.loading = false;
+          this.orders = res.data.orders;
+          this.pagination = res.data.pagination;
+        })
+        .catch((error) => {
+          this.loading = false;
+          this.responseMessage = error.response.data.message;
+          this.$swal.fire({
+            icon: 'error',
+            title: '好像出了點錯誤',
+            text: error.response.data.message,
+          });
+        });
+    },
+    updateOrder(order) {
+      this.loading = true;
+      this.$http.put(`${VITE_APP_URL}/api/${VITE_APP_PATH}/admin/order/${order.id}`, { data: order })
+        .then((res) => {
+          this.loading = false;
+          this.responseMessage = res.data.message;
+          this.$swal.fire({
+            icon: 'success',
+            title: '好耶',
+            text: res.data.message,
+          });
+          this.getOrders();
+        })
+        .catch((error) => {
+          this.loading = false;
+          this.responseMessage = error.response.data.message;
+          this.$swal.fire({
+            icon: 'error',
+            title: '好像出了點錯誤',
+            text: error.response.data.message,
+          });
+        });
+    },
+    deleteOrder(id) {
+      this.loading = true;
+      this.$http
+        .delete(`${VITE_APP_URL}/api/${VITE_APP_PATH}/admin/order/${id}`)
+        .then((res) => {
+          this.loading = false;
+          this.responseMessage = res.data.message;
+          this.$swal.fire({
+            icon: 'success',
+            title: '好耶',
+            text: res.data.message,
+          });
+          this.getOrders();
+        })
+        .catch((error) => {
+          this.loading = false;
+          this.responseMessage = error.response.data.message;
+          this.$swal.fire({
+            icon: 'error',
+            title: '好像出了點錯誤',
+            text: error.response.data.message,
+          });
+        });
+    },
     changePage(page) {
       this.getOrders(page);
     },
-    ...mapActions(orderStore, ['getOrders', 'deleteOrder']),
     ...mapActions(authStore, ['checkAuth']),
   },
   mounted() {
@@ -82,6 +152,7 @@ export default {
     orderModal,
     DelConfirmModal,
     PaginationComponent,
+    PageLoading,
   },
 };
 </script>

@@ -13,7 +13,7 @@
             新增產品
             </button>
         </div>
-        <table class="table align-middle">
+        <table class="table text-center align-middle">
             <thead>
                 <tr>
                 <th>ID</th>
@@ -53,36 +53,109 @@
         <PaginationComponent :pages="pagination" @changePage="changePage"/>
     </div>
 
-    <ProductModal ref="pModal" :product="product" :isNew="isNew"/>
+    <ProductModal ref="pModal" :product="product" :isNew="isNew" @update-product="updateProduct"/>
     <DelConfirmModal ref="delModal" :message="message" :delFunc="delFunc"/>
+    <PageLoading :active="loading"/>
+    <AlertModal ref="alertModal" :message="responseMessage"></AlertModal>
 </template>
 
 <script>
-import { mapState, mapActions } from 'pinia';
-import productStore from '../../stores/productStore';
+import { mapActions } from 'pinia';
 import authStore from '../../stores/authStore';
 import ProductModal from '../../components/ProductModal.vue';
 import DelConfirmModal from '../../components/DelConfirmModal.vue';
 import PaginationComponent from '../../components/PaginationComponent.vue';
+import PageLoading from '../../components/PageLoading.vue';
+
+const { VITE_APP_URL, VITE_APP_PATH } = import.meta.env;
 
 export default {
   name: 'ProductsView',
   data() {
     return {
+      products: {},
       product: {},
       isNew: true,
+      pagination: {},
       message: '',
       delFunc: null,
+      loading: false,
+      responseMessage: '',
     };
   },
-  computed: {
-    ...mapState(productStore, ['products', 'pagination']),
-  },
   methods: {
+    getProducts(page = 1) {
+      this.loading = true;
+      this.$http
+        .get(`${VITE_APP_URL}/api/${VITE_APP_PATH}/admin/products?page=${page}`)
+        .then((res) => {
+          this.loading = false;
+          this.products = res.data.products;
+          this.pagination = res.data.pagination;
+        })
+        .catch((error) => {
+          this.loading = false;
+          this.responseMessage = error.response.data.message;
+          this.$swal.fire({
+            icon: 'error',
+            title: '好像出了點錯誤',
+            text: this.responseMessage,
+          });
+        });
+    },
+    updateProduct(product) {
+      this.loading = true;
+      const url = this.isNew ? `${VITE_APP_URL}/api/${VITE_APP_PATH}/admin/product` : `${VITE_APP_URL}/api/${VITE_APP_PATH}/admin/product/${product.id}`;
+      const http = this.isNew ? 'post' : 'put'; // product存在: 修改, product不存在: 新增
+
+      this.$http[http](url, { data: product })
+        .then((res) => {
+          this.loading = false;
+          this.responseMessage = res.data.message;
+          this.$swal.fire({
+            icon: 'success',
+            title: '好耶',
+            text: this.responseMessage,
+          });
+          this.getProducts();
+        })
+        .catch((error) => {
+          this.loading = false;
+          this.responseMessage = error.response.data.message;
+          this.$swal.fire({
+            icon: 'error',
+            title: '好像出了點錯誤',
+            text: this.responseMessage,
+          });
+        });
+    },
+    deleteProduct(id) {
+      this.loading = true;
+      this.$http
+        .delete(`${VITE_APP_URL}/api/${VITE_APP_PATH}/admin/product/${id}`)
+        .then((res) => {
+          this.loading = false;
+          this.responseMessage = res.data.message;
+          this.$swal.fire({
+            icon: 'success',
+            title: '好耶',
+            text: this.responseMessage,
+          });
+          this.getProducts();
+        })
+        .catch((error) => {
+          this.loading = false;
+          this.responseMessage = error.response.data.message;
+          this.$swal.fire({
+            icon: 'error',
+            title: '好像出了點錯誤',
+            text: this.responseMessage,
+          });
+        });
+    },
     changePage(page) {
       this.getProducts(page);
     },
-    ...mapActions(productStore, ['getProducts', 'deleteProduct']),
     ...mapActions(authStore, ['checkAuth']),
   },
   mounted() {
@@ -93,6 +166,7 @@ export default {
     ProductModal,
     DelConfirmModal,
     PaginationComponent,
+    PageLoading,
   },
 };
 

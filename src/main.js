@@ -11,14 +11,18 @@ import {
 } from '@vee-validate/rules';
 import { localize, setLocale } from '@vee-validate/i18n';
 import * as bootstrap from 'bootstrap';
+
+// sweet alert
+import VueSweetalert2 from 'vue-sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
+
 import App from './App.vue';
 import router from './router';
 
 // VeeValidate
 import zhTW from '../zh_TW.json';
 
-// import MyLoading from './components/MyLoading.vue';
-
+// style
 import './assets/all.scss';
 
 window.bootstrap = bootstrap;
@@ -40,6 +44,7 @@ setLocale('zh_TW');
 app.use(createPinia());
 app.use(router);
 app.use(VueAxios, axios);
+app.use(VueSweetalert2);
 
 // app.component('MyLoading', MyLoading);
 app.component('VForm', Form);

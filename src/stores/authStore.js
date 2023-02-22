@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
+import swal from 'sweetalert2';
+import '@sweetalert2/themes/dark/dark.scss';
 import router from '../router';
 
 const { VITE_APP_URL } = import.meta.env;
@@ -20,23 +22,42 @@ export default defineStore('authStore', {
           this.isLogged = true;
           const { token, expired } = res.data;
           document.cookie = `hexToken=${token}; expired=${new Date(expired)};`;
-          alert(res.data.message);
+          swal.fire({
+            icon: 'success',
+            title: '登入成功',
+            showConfirmButton: false,
+            timer: 1500,
+          });
           router.push('/admin/products');
         })
         .catch((err) => {
           this.isLogged = false;
-          alert(err.response.data.message);
+          swal.fire({
+            icon: 'error',
+            title: '很不幸的...',
+            text: err.response.data.message,
+          });
         });
     },
     signOut() {
       axios.post(`${VITE_APP_URL}/logout`)
         .then((res) => {
-          alert(res.data.message);
+          swal.fire({
+            icon: 'success',
+            title: '掰掰',
+            tesxt: res.data.message,
+            showConfirmButton: false,
+            timer: 1500,
+          });
           this.isLogged = false;
           router.push('/');
         })
         .catch((err) => {
-          alert(err.response.data.message);
+          swal.fire({
+            icon: 'error',
+            title: '掰掰失敗',
+            text: err.response.data.message,
+          });
         });
     },
     checkAuth() {
@@ -50,7 +71,11 @@ export default defineStore('authStore', {
         .catch((err) => {
           this.isLogged = false;
           router.push('/');
-          alert(err.response.data.message);
+          swal.fire({
+            icon: 'error',
+            title: '很不幸的...',
+            text: err.response.data.message,
+          });
         });
     },
   },

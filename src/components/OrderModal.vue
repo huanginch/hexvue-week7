@@ -11,7 +11,7 @@
                 <h5 class="modal-title" id="orderModalLabel">訂單編號: {{ tempOrder.id }}</h5>
                 <button
                 type="button"
-                class="btn-close"
+                class="btn-close bg-white rounded-0"
                 data-bs-dismiss="modal"
                 aria-label="Close"></button>
             </div>
@@ -176,7 +176,7 @@
                 <button
                 type="button"
                 class="btn btn-secondary"
-                @click="updateOrder(tempOrder);
+                @click="submit();
                 this.closeModal();
                 ">修改</button>
             </div>
@@ -186,8 +186,6 @@
 </template>
 
 <script>
-import { mapActions } from 'pinia';
-import orderStore from '../stores/orderStore';
 
 export default {
   name: 'orderModal',
@@ -216,7 +214,9 @@ export default {
     closeModal() {
       this.modal.hide();
     },
-    ...mapActions(orderStore, ['updateOrder']),
+    submit() {
+      this.$emit('update-order', this.tempOrder);
+    },
   },
   mounted() {
     this.modal = new window.bootstrap.Modal(document.getElementById('orderModal'));
