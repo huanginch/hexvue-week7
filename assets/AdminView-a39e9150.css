@@ -1,0 +1,1 @@
+.dashboard{position:fixed;top:0;padding-top:70px;height:100vh;max-width:300px}.signOut{color:#bab8b8;transition:all .3s ease-in-out}.signOut:hover{color:gray}.dashboard-link{transition:all .3s ease-in-out}.dashboard-link:active{color:#bab8b8}.dashboard-link:focus{color:#bab8b8}.inner-page{width:calc(100% - 300px)}
