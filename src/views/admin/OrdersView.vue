@@ -90,6 +90,9 @@ export default {
             title: '好像出了點錯誤',
             text: error.response.data.message,
           });
+          if (error.response.status === 401) {
+            this.$router.push('/');
+          }
         });
     },
     updateOrder(order) {

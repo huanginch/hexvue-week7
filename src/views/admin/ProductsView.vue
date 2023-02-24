@@ -101,6 +101,9 @@ export default {
             title: '好像出了點錯誤',
             text: this.responseMessage,
           });
+          if (error.response.status === 401) {
+            this.$router.push('/');
+          }
         });
     },
     updateProduct(product) {
