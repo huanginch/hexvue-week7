@@ -55,8 +55,8 @@
 </template>
 
 <script>
-import { mapActions } from 'pinia';
-import authStore from '../../stores/authStore';
+// import { mapActions } from 'pinia';
+// import authStore from '../../stores/authStore';
 import CouponModal from '../../components/CouponModal.vue';
 import DeleteModal from '../../components/DelConfirmModal.vue';
 import Pagination from '../../components/PaginationComponent.vue';
@@ -148,7 +148,7 @@ export default {
           });
         });
     },
-    ...mapActions(authStore, ['checkAuth']),
+    // ...mapActions(authStore, ['checkAuth']),
   },
   mounted() {
     this.checkAuth();

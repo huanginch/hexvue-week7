@@ -55,6 +55,8 @@
 import { mapActions } from 'pinia';
 import authStore from '../stores/authStore';
 
+const { VITE_APP_URL } = import.meta.env;
+
 export default {
   name: 'LoginView',
   data() {
@@ -64,7 +66,36 @@ export default {
     };
   },
   methods: {
-    ...mapActions(authStore, ['signIn']),
+    signIn(username, password) {
+      this.isLoading = true;
+      this.$http
+        .post(`${VITE_APP_URL}/admin/signin`, {
+          username,
+          password,
+        })
+        .then((res) => {
+          // isLogged.value = true;
+          const { token, expired } = res.data;
+          document.cookie = `hexToken=${token}; expired=${new Date(expired)};`;
+          this.$swal.fire({
+            icon: 'success',
+            title: '登入成功',
+            showConfirmButton: false,
+            timer: 1500,
+          });
+          this.checkAuth();
+          this.$router.push('/admin/products');
+        })
+        .catch((err) => {
+          // isLogged.value = false;
+          this.$swal.fire({
+            icon: 'error',
+            title: '很不幸的...',
+            text: err.response.data.message,
+          });
+        });
+    },
+    ...mapActions(authStore, ['checkAuth']),
   },
 };
 
