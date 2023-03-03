@@ -16,7 +16,7 @@
                 <tr v-for="order in orders" :key="order.id">
                 <th>{{ order.id }}</th>
                 <td>{{ order.create_at }}</td>
-                <td>{{ order.user.name }}</td>
+                <td>{{ order.user?.name }}</td>
                 <td>{{ order.total }}</td>
                 <td v-if="order.status==0">已成立 </td>
                 <td v-if="order.status==1">未處理</td>
