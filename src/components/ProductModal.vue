@@ -225,14 +225,16 @@
                             <div class="mb-3">
                                 <h3>其他圖片</h3>
                                 <div class="mb-3"
-                                v-for="(img, index) in tempProduct.imagesUrl" :key="index">
+                                v-for="(img, index) in tempProduct.imagesUrl"
+                                :key="'otherImg' + index">
                                     <label for="productOtherImg" class="form-label">圖片網址</label>
-                                    <VField
+                                    {{ img }}
+                                    <input
                                     name="productOtherImg"
                                     v-model="tempProduct.imagesUrl[index]"
                                     class="form-control mb-2"
                                     type="text" id="productOtherImg"
-                                    placeholder="請輸入圖片連結"></VField>
+                                    placeholder="請輸入圖片連結"/>
                                     <img v-if="img" :src="img" :alt="index" class="img-fluid mb-2">
                                     <button type="button"
                                     class="btn btn-outline-primary w-25"
@@ -277,7 +279,9 @@ export default {
   data() {
     return {
       modal: null,
-      tempProduct: {},
+      tempProduct: {
+        imagesUrl: [],
+      },
       showAddImgBtn: true,
       loadingImg: false,
       message: '',
@@ -290,9 +294,8 @@ export default {
     tempProduct: {
       handler() {
         // limit the number of images to 5
-        if (this.tempProduct.imagesUrl === undefined) {
+        if (!this.tempProduct.imagesUrl) {
           this.tempProduct.imagesUrl = [];
-          return;
         }
         if (this.tempProduct.imagesUrl.length >= 5) {
           this.showAddImgBtn = false;
